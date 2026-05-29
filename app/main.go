@@ -129,7 +129,7 @@ func handleExternalExec(input string) {
 			return
 		}
 
-		fmt.Printf("%s", string(out))
+		fmt.Printf("%s\n", string(out))
 		return
 	}
 
