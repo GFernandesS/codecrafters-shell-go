@@ -84,6 +84,12 @@ func handleType(input string) bool {
 			continue
 		}
 
+		hasExecPermissions := commandInfo.Mode().Perm()&0111 != 0
+
+		if !hasExecPermissions {
+			continue
+		}
+
 		fmt.Printf("%s is %s\n", commandInfo.Name(), fullPath)
 		return true
 	}
