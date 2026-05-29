@@ -4,7 +4,10 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"os/exec"
 	"strings"
+
+	"github.com/codecrafters-io/shell-starter-go/internal/helpers"
 )
 
 // Ensures gofmt doesn't remove the "fmt" import in stage 1 (feel free to remove this!)
@@ -17,7 +20,7 @@ func main() {
 
 	fmt.Print("$ ")
 
-	for true {
+	for {
 		if scanner.Scan() {
 			input := scanner.Text()
 
@@ -39,7 +42,7 @@ func main() {
 				continue
 			}
 
-			fmt.Printf("%s: command not found\n", input)
+			handleExternalExec(input)
 		}
 
 		fmt.Print("$ ")
@@ -84,7 +87,7 @@ func handleType(input string) bool {
 			continue
 		}
 
-		hasExecPermissions := commandInfo.Mode().Perm()&0111 != 0
+		hasExecPermissions := helpers.FileHasExecPermissions(commandInfo)
 
 		if !hasExecPermissions {
 			continue
@@ -96,4 +99,39 @@ func handleType(input string) bool {
 
 	fmt.Printf("%s: not found\n", command)
 	return true
+}
+
+func handleExternalExec(input string) {
+	pathsToSearch := strings.Split(os.Getenv("PATH"), ":")
+
+	commandParts := strings.Split(input, " ")
+
+	for _, path := range pathsToSearch {
+		fullPath := path + "/" + commandParts[0]
+
+		commandInfo, err := os.Stat(fullPath)
+
+		if err != nil {
+			continue
+		}
+
+		hasExecPermissions := helpers.FileHasExecPermissions(commandInfo)
+
+		if !hasExecPermissions {
+			continue
+		}
+
+		cmd := exec.Command(fullPath, commandParts[1:]...)
+
+		out, err := cmd.CombinedOutput()
+
+		if err != nil {
+			return
+		}
+
+		fmt.Printf("%s", string(out))
+		return
+	}
+
+	fmt.Printf("%s: not found\n", commandParts[0])
 }
