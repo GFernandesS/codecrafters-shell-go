@@ -10,7 +10,7 @@ import (
 // Ensures gofmt doesn't remove the "fmt" import in stage 1 (feel free to remove this!)
 var _ = fmt.Print
 
-var validCommands = []string{"echo", "exit", "type"}
+var builtInCommands = []string{"echo", "exit", "type"}
 
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
@@ -66,11 +66,26 @@ func handleType(input string) bool {
 
 	command := strings.Replace(input, "type ", "", 1)
 
-	for _, c := range validCommands {
+	for _, c := range builtInCommands {
 		if c == command {
 			fmt.Printf("%s is a shell builtin\n", command)
 			return true
 		}
+	}
+
+	pathsToSearch := strings.Split(os.Getenv("PATH"), ":")
+
+	for _, path := range pathsToSearch {
+		fullPath := path + "/" + command
+
+		commandInfo, err := os.Stat(fullPath)
+
+		if err != nil {
+			continue
+		}
+
+		fmt.Printf("%s is %s\n", commandInfo.Name(), fullPath)
+		return true
 	}
 
 	fmt.Printf("%s: not found\n", command)
