@@ -121,7 +121,7 @@ func handleExternalExec(input string) {
 			continue
 		}
 
-		cmd := exec.Command(fullPath, commandParts[1:]...)
+		cmd := exec.Command(commandParts[0], commandParts[1:]...)
 
 		out, err := cmd.CombinedOutput()
 
