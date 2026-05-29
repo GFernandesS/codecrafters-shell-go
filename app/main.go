@@ -18,7 +18,13 @@ func main() {
 		if scanner.Scan() {
 			input := scanner.Text()
 
-			fmt.Printf("%s: command not found\n", input)
+			switch input {
+			case "exit":
+				os.Exit(0)
+			default:
+				fmt.Printf("%s: command not found\n", input)
+			}
+
 		}
 
 		fmt.Print("$ ")
