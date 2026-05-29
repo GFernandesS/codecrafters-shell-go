@@ -14,10 +14,14 @@ func main() {
 
 	fmt.Print("$ ")
 
-	if scanner.Scan() {
-		input := scanner.Text()
+	for true {
+		if scanner.Scan() {
+			input := scanner.Text()
 
-		fmt.Printf("%s: command not found\n", input)
+			fmt.Printf("%s: command not found\n", input)
+		}
+
+		fmt.Print("$ ")
 	}
 
 }
