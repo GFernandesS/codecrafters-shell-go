@@ -13,7 +13,7 @@ import (
 // Ensures gofmt doesn't remove the "fmt" import in stage 1 (feel free to remove this!)
 var _ = fmt.Print
 
-var builtInCommands = []string{"echo", "exit", "type"}
+var builtInCommands = []string{"echo", "exit", "type", "pwd"}
 
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
@@ -42,6 +42,13 @@ func main() {
 				continue
 			}
 
+			wasHandle = handlePwd(input)
+
+			if wasHandle {
+				fmt.Print("$ ")
+				continue
+			}
+
 			handleExternalExec(input)
 		}
 
@@ -59,6 +66,18 @@ func handleEcho(input string) bool {
 	}
 
 	fmt.Printf("%s\n", strings.Replace(input, "echo ", "", 1))
+	return true
+}
+
+func handlePwd(input string) bool {
+	if !strings.HasPrefix(input, "pwd") {
+		return false
+	}
+
+	path, _ := os.Getwd()
+
+	fmt.Printf("%s\n", path)
+
 	return true
 }
 
