@@ -138,6 +138,10 @@ func handleCd(input string) bool {
 
 	command := strings.Replace(input, "cd ", "", 1)
 
+	if command == "~" {
+		command, _ = os.UserHomeDir()
+	}
+
 	err := os.Chdir(command)
 
 	if err != nil {
