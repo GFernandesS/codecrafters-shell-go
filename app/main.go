@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"maps"
 	"os"
 	"os/exec"
 	"strings"
@@ -13,7 +14,19 @@ import (
 // Ensures gofmt doesn't remove the "fmt" import in stage 1 (feel free to remove this!)
 var _ = fmt.Print
 
-var builtInCommands = []string{"echo", "exit", "type", "pwd"}
+type Handler func(value string) bool
+
+func init() {
+	builtInCommands = map[string]Handler{
+		"exit": handleExit,
+		"echo": handleEcho,
+		"type": handleType,
+		"pwd":  handlePwd,
+		"cd":   handleCd,
+	}
+}
+
+var builtInCommands map[string]Handler
 
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
@@ -24,25 +37,17 @@ func main() {
 		if scanner.Scan() {
 			input := scanner.Text()
 
-			if input == "exit" {
-				handleExit()
+			handleExit(input)
+
+			var wasHandle bool
+
+			for _, handler := range builtInCommands {
+				wasHandle = handler(input)
+
+				if wasHandle {
+					break
+				}
 			}
-
-			wasHandle := handleEcho(input)
-
-			if wasHandle {
-				fmt.Print("$ ")
-				continue
-			}
-
-			wasHandle = handleType(input)
-
-			if wasHandle {
-				fmt.Print("$ ")
-				continue
-			}
-
-			wasHandle = handlePwd(input)
 
 			if wasHandle {
 				fmt.Print("$ ")
@@ -56,8 +61,14 @@ func main() {
 	}
 }
 
-func handleExit() {
+func handleExit(input string) bool {
+	if input != "exit" {
+		return false
+	}
+
 	os.Exit(0)
+
+	return true
 }
 
 func handleEcho(input string) bool {
@@ -88,7 +99,7 @@ func handleType(input string) bool {
 
 	command := strings.Replace(input, "type ", "", 1)
 
-	for _, c := range builtInCommands {
+	for c := range maps.Keys(builtInCommands) {
 		if c == command {
 			fmt.Printf("%s is a shell builtin\n", command)
 			return true
@@ -117,6 +128,22 @@ func handleType(input string) bool {
 	}
 
 	fmt.Printf("%s: not found\n", command)
+	return true
+}
+
+func handleCd(input string) bool {
+	if !strings.HasPrefix(input, "cd") {
+		return false
+	}
+
+	command := strings.Replace(input, "cd ", "", 1)
+
+	err := os.Chdir(command)
+
+	if err != nil {
+		fmt.Printf("cd: %s: No such file or directory\n", err)
+	}
+
 	return true
 }
 
