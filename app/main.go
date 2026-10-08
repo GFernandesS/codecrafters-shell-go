@@ -38,6 +38,8 @@ func main() {
 		if scanner.Scan() {
 			input := scanner.Text()
 
+			input = sanitizeInput(input)
+
 			handleExit(input)
 
 			var wasHandle bool
@@ -77,11 +79,7 @@ func handleEcho(input string) bool {
 		return false
 	}
 
-	valueTokens, _ := shlex.Split(strings.Replace(input, "echo ", "", 1))
-
-	escapedValue := strings.Join(valueTokens, " ")
-
-	fmt.Printf("%s\n", escapedValue)
+	fmt.Printf("%s\n", strings.Replace(input, "echo ", "", 1))
 	return true
 }
 
@@ -189,4 +187,10 @@ func handleExternalExec(input string) {
 	}
 
 	fmt.Printf("%s: not found\n", commandParts[0])
+}
+
+func sanitizeInput(input string) string {
+	inputTokens, _ := shlex.Split(input)
+
+	return strings.Join(inputTokens, " ")
 }
