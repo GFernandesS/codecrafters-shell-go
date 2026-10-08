@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/codecrafters-io/shell-starter-go/internal/helpers"
+	"github.com/google/shlex"
 )
 
 // Ensures gofmt doesn't remove the "fmt" import in stage 1 (feel free to remove this!)
@@ -76,7 +77,11 @@ func handleEcho(input string) bool {
 		return false
 	}
 
-	fmt.Printf("%s\n", strings.Replace(input, "echo ", "", 1))
+	valueTokens, _ := shlex.Split(strings.Replace(input, "echo ", "", 1))
+
+	escapedValue := strings.Join(valueTokens, " ")
+
+	fmt.Printf("%s\n", escapedValue)
 	return true
 }
 
