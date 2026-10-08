@@ -174,11 +174,12 @@ func handleExternalExec(input string) {
 			continue
 		}
 
-		cmd := exec.Command(commandParts[0], commandParts[1:]...)
+		cmd := exec.Command(commandParts[0], strings.Replace(input, commandParts[0]+" ", "", 1))
 
 		out, err := cmd.CombinedOutput()
 
 		if err != nil {
+			fmt.Printf("%s %s\n", string(out), err)
 			return
 		}
 
