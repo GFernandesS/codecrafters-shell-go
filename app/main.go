@@ -2,10 +2,12 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"maps"
 	"os"
 	"os/exec"
+	"slices"
 	"strings"
 
 	"github.com/codecrafters-io/shell-starter-go/internal/helpers"
@@ -15,7 +17,7 @@ import (
 // Ensures gofmt doesn't remove the "fmt" import in stage 1 (feel free to remove this!)
 var _ = fmt.Print
 
-type Handler func(value string) bool
+type Handler func(value string, valueTokens []string) bool
 
 func init() {
 	builtInCommands = map[string]Handler{
@@ -40,12 +42,12 @@ func main() {
 
 			input, inputTokens := sanitizeInput(input)
 
-			handleExit(input)
+			handleExit(input, inputTokens)
 
 			var wasHandle bool
 
 			for _, handler := range builtInCommands {
-				wasHandle = handler(input)
+				wasHandle = handler(input, inputTokens)
 
 				if wasHandle {
 					break
@@ -64,7 +66,7 @@ func main() {
 	}
 }
 
-func handleExit(input string) bool {
+func handleExit(input string, _ []string) bool {
 	if input != "exit" {
 		return false
 	}
@@ -74,16 +76,36 @@ func handleExit(input string) bool {
 	return true
 }
 
-func handleEcho(input string) bool {
+func handleEcho(input string, inputTokens []string) bool {
 	if !strings.HasPrefix(input, "echo") {
 		return false
+	}
+
+	if slices.Contains(inputTokens, ">") || slices.Contains(inputTokens, "1>") {
+		directionIndex := slices.Index(inputTokens, ">")
+
+		if directionIndex == -1 {
+			directionIndex = slices.Index(inputTokens, "1>")
+		}
+
+		contentToWrite := strings.Join(inputTokens[1:directionIndex], "")
+
+		fileToWrite := inputTokens[directionIndex+1]
+
+		wd, _ := os.Getwd()
+
+		if err := os.WriteFile(fmt.Sprintf("%s/%s", wd, fileToWrite), []byte(contentToWrite), 0644); err != nil {
+			fmt.Printf(err.Error())
+		}
+
+		return true
 	}
 
 	fmt.Printf("%s\n", strings.Replace(input, "echo ", "", 1))
 	return true
 }
 
-func handlePwd(input string) bool {
+func handlePwd(input string, _ []string) bool {
 	if !strings.HasPrefix(input, "pwd") {
 		return false
 	}
@@ -95,7 +117,7 @@ func handlePwd(input string) bool {
 	return true
 }
 
-func handleType(input string) bool {
+func handleType(input string, _ []string) bool {
 	if !strings.HasPrefix(input, "type") {
 		return false
 	}
@@ -134,7 +156,7 @@ func handleType(input string) bool {
 	return true
 }
 
-func handleCd(input string) bool {
+func handleCd(input string, _ []string) bool {
 	if !strings.HasPrefix(input, "cd") {
 		return false
 	}
@@ -155,9 +177,9 @@ func handleCd(input string) bool {
 }
 
 func handleExternalExec(inputTokens []string) {
-	pathsToSearch := strings.Split(os.Getenv("PATH"), ":")
+	pathsToSearch := strings.SplitSeq(os.Getenv("PATH"), ":")
 
-	for _, path := range pathsToSearch {
+	for path := range pathsToSearch {
 		fullPath := path + "/" + inputTokens[0]
 
 		commandInfo, err := os.Stat(fullPath)
@@ -172,11 +194,39 @@ func handleExternalExec(inputTokens []string) {
 			continue
 		}
 
+		var outputFile string
+
+		if slices.Contains(inputTokens, ">") || slices.Contains(inputTokens, "1>") {
+			directionIndex := slices.Index(inputTokens, ">")
+
+			if directionIndex == -1 {
+				directionIndex = slices.Index(inputTokens, "1>")
+			}
+
+			wd, _ := os.Getwd()
+
+			outputFile = fmt.Sprintf("%s/%s", wd, inputTokens[directionIndex+1])
+
+			inputTokens = append(inputTokens[:directionIndex], inputTokens[directionIndex+1:]...)
+		}
+
 		cmd := exec.Command(inputTokens[0], inputTokens[1:]...)
 
-		out, _ := cmd.CombinedOutput()
+		var outputBuffer bytes.Buffer
 
-		fmt.Printf("%s", string(out))
+		cmd.Stdout = &outputBuffer
+
+		_ = cmd.Run()
+
+		if outputFile != "" {
+			if err := os.WriteFile(outputFile, outputBuffer.Bytes(), 0644); err != nil {
+				fmt.Printf(err.Error())
+			}
+
+			return
+		}
+
+		fmt.Printf("%s", outputBuffer.String())
 		return
 	}
 
