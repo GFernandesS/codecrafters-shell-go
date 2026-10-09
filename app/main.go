@@ -226,14 +226,20 @@ func handleExternalExec(inputTokens []string) {
 				return
 			}
 
-			if err := os.WriteFile(outputFile, outputBuffer.Bytes(), 0644); err != nil {
+			if err := os.WriteFile(outputFile, []byte(strings.Replace(outputBuffer.String(), "\n", "", 1)), 0644); err != nil {
 				fmt.Printf(err.Error())
 			}
 
 			return
 		}
 
-		fmt.Printf("%s\n", outputBuffer.String())
+		commandOutput := outputBuffer.String()
+
+		if string(commandOutput[len(commandOutput)-1]) != "\n" {
+			commandOutput = commandOutput + "\n"
+		}
+
+		fmt.Print(commandOutput)
 		return
 	}
 
