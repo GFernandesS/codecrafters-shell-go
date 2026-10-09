@@ -43,6 +43,11 @@ func main() {
 
 			input, inputTokens := sanitizeInput(input)
 
+			if len(inputTokens) == 0 {
+				fmt.Print("$ ")
+				continue
+			}
+
 			handleExit(input, inputTokens)
 
 			var wasHandle bool
@@ -81,7 +86,7 @@ func handleEcho(input string, inputTokens []string) bool {
 	if !strings.HasPrefix(input, "echo") {
 		return false
 	}
-	//TODO: Usar o input para pegar o conteudo do arquivo ao invés de partir dos tokens (o array de tokens não salva os espacos)
+
 	if slices.Contains(inputTokens, ">") || slices.Contains(inputTokens, "1>") {
 		directionIndex := slices.Index(inputTokens, ">")
 
