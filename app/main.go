@@ -38,7 +38,7 @@ func main() {
 		if scanner.Scan() {
 			input := scanner.Text()
 
-			input = sanitizeInput(input)
+			input, inputTokens := sanitizeInput(input)
 
 			handleExit(input)
 
@@ -57,7 +57,7 @@ func main() {
 				continue
 			}
 
-			handleExternalExec(input)
+			handleExternalExec(inputTokens)
 		}
 
 		fmt.Print("$ ")
@@ -109,9 +109,9 @@ func handleType(input string) bool {
 		}
 	}
 
-	pathsToSearch := strings.Split(os.Getenv("PATH"), ":")
+	pathsToSearch := strings.SplitSeq(os.Getenv("PATH"), ":")
 
-	for _, path := range pathsToSearch {
+	for path := range pathsToSearch {
 		fullPath := path + "/" + command
 
 		commandInfo, err := os.Stat(fullPath)
@@ -154,13 +154,11 @@ func handleCd(input string) bool {
 	return true
 }
 
-func handleExternalExec(input string) {
+func handleExternalExec(inputTokens []string) {
 	pathsToSearch := strings.Split(os.Getenv("PATH"), ":")
 
-	commandParts := strings.Split(input, " ")
-
 	for _, path := range pathsToSearch {
-		fullPath := path + "/" + commandParts[0]
+		fullPath := path + "/" + inputTokens[0]
 
 		commandInfo, err := os.Stat(fullPath)
 
@@ -174,24 +172,19 @@ func handleExternalExec(input string) {
 			continue
 		}
 
-		cmd := exec.Command(commandParts[0], strings.Replace(input, commandParts[0]+" ", "", 1))
+		cmd := exec.Command(inputTokens[0], inputTokens[1:]...)
 
-		out, err := cmd.CombinedOutput()
-
-		if err != nil {
-			fmt.Printf("%s %s\n", string(out), err)
-			return
-		}
+		out, _ := cmd.CombinedOutput()
 
 		fmt.Printf("%s", string(out))
 		return
 	}
 
-	fmt.Printf("%s: not found\n", commandParts[0])
+	fmt.Printf("%s: not found\n", inputTokens[0])
 }
 
-func sanitizeInput(input string) string {
+func sanitizeInput(input string) (string, []string) {
 	inputTokens, _ := shlex.Split(input)
 
-	return strings.Join(inputTokens, " ")
+	return strings.Join(inputTokens, " "), inputTokens
 }
