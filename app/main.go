@@ -222,10 +222,7 @@ func handleExternalExec(inputTokens []string) {
 
 		cmd.Stderr = &errBuffer
 
-		if err := cmd.Run(); err != nil {
-			fmt.Print(errBuffer.String())
-			return
-		}
+		cmdErr := cmd.Run()
 
 		if outputFile != "" {
 			if err := os.MkdirAll(filepath.Dir(outputFile), 0755); err != nil {
@@ -235,6 +232,10 @@ func handleExternalExec(inputTokens []string) {
 
 			if err := os.WriteFile(outputFile, outputBuffer.Bytes(), 0644); err != nil {
 				fmt.Printf(err.Error())
+			}
+
+			if cmdErr != nil {
+				fmt.Printf(cmdErr.Error())
 			}
 
 			return
@@ -247,6 +248,11 @@ func handleExternalExec(inputTokens []string) {
 		}
 
 		fmt.Print(commandOutput)
+
+		if cmdErr != nil {
+			fmt.Printf(cmdErr.Error())
+		}
+
 		return
 	}
 
