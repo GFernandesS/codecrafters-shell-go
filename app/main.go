@@ -235,7 +235,7 @@ func handleExternalExec(inputTokens []string) {
 			}
 
 			if cmdErr != nil {
-				fmt.Printf(cmdErr.Error())
+				fmt.Printf(errBuffer.String())
 			}
 
 			return
@@ -250,7 +250,7 @@ func handleExternalExec(inputTokens []string) {
 		fmt.Print(commandOutput)
 
 		if cmdErr != nil {
-			fmt.Printf(cmdErr.Error())
+			fmt.Printf(errBuffer.String())
 		}
 
 		return
