@@ -207,7 +207,7 @@ func handleExternalExec(inputTokens []string) {
 
 			outputFile = fmt.Sprintf("%s/%s", wd, inputTokens[directionIndex+1])
 
-			inputTokens = append(inputTokens[:directionIndex], inputTokens[directionIndex+1:]...)
+			inputTokens = append(inputTokens[:directionIndex])
 		}
 
 		cmd := exec.Command(inputTokens[0], inputTokens[1:]...)
