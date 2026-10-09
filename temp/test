@@ -4,4 +4,5 @@ go.mod
 go.sum
 internal
 README.md
+test.txt
 your_program.sh

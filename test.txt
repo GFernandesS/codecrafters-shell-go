@@ -1,0 +1,7 @@
+540694 app
+540698 codecrafters.yml
+540699 go.mod
+540700 go.sum
+659837 internal
+540691 README.md
+540701 your_program.sh

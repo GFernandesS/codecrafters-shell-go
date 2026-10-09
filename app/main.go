@@ -93,16 +93,12 @@ func handleEcho(input string, inputTokens []string) bool {
 
 		fileToWrite := inputTokens[directionIndex+1]
 
-		wd, _ := os.Getwd()
-
-		outputPath := fmt.Sprintf("%s/%s", wd, fileToWrite)
-
-		if err := os.MkdirAll(filepath.Dir(outputPath), 0755); err != nil {
+		if err := os.MkdirAll(filepath.Dir(fileToWrite), 0755); err != nil {
 			fmt.Println(err.Error())
 			return true
 		}
 
-		if err := os.WriteFile(outputPath, []byte(contentToWrite), 0644); err != nil {
+		if err := os.WriteFile(fileToWrite, []byte(contentToWrite), 0644); err != nil {
 			fmt.Printf(err.Error())
 		}
 
@@ -211,9 +207,7 @@ func handleExternalExec(inputTokens []string) {
 				directionIndex = slices.Index(inputTokens, "1>")
 			}
 
-			wd, _ := os.Getwd()
-
-			outputFile = fmt.Sprintf("%s/%s", wd, inputTokens[directionIndex+1])
+			outputFile = inputTokens[directionIndex+1]
 
 			inputTokens = append(inputTokens[:directionIndex])
 		}
