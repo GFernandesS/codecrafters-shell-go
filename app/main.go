@@ -95,7 +95,14 @@ func handleEcho(input string, inputTokens []string) bool {
 
 		wd, _ := os.Getwd()
 
-		if err := os.WriteFile(fmt.Sprintf("%s/%s", wd, fileToWrite), []byte(contentToWrite), 0644); err != nil {
+		outputPath := fmt.Sprintf("%s/%s", wd, fileToWrite)
+
+		if err := os.MkdirAll(filepath.Dir(outputPath), 0755); err != nil {
+			fmt.Println(err.Error())
+			return true
+		}
+
+		if err := os.WriteFile(outputPath, []byte(contentToWrite), 0644); err != nil {
 			fmt.Printf(err.Error())
 		}
 
