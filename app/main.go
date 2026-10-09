@@ -216,10 +216,15 @@ func handleExternalExec(inputTokens []string) {
 
 		var outputBuffer bytes.Buffer
 
+		var errBuffer bytes.Buffer
+
 		cmd.Stdout = &outputBuffer
 
+		cmd.Stderr = &errBuffer
+
 		if err := cmd.Run(); err != nil {
-			fmt.Println(outputBuffer.String())
+			fmt.Print(errBuffer.String())
+			return
 		}
 
 		if outputFile != "" {
