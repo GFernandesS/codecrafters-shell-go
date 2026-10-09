@@ -233,7 +233,7 @@ func handleExternalExec(inputTokens []string) {
 			return
 		}
 
-		fmt.Printf("%s", outputBuffer.String())
+		fmt.Printf("%s\n", outputBuffer.String())
 		return
 	}
 
