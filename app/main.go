@@ -7,6 +7,7 @@ import (
 	"maps"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"slices"
 	"strings"
 
@@ -219,6 +220,11 @@ func handleExternalExec(inputTokens []string) {
 		_ = cmd.Run()
 
 		if outputFile != "" {
+			if err := os.MkdirAll(filepath.Dir(outputFile), 0755); err != nil {
+				fmt.Printf(err.Error())
+				return
+			}
+
 			if err := os.WriteFile(outputFile, outputBuffer.Bytes(), 0644); err != nil {
 				fmt.Printf(err.Error())
 			}
