@@ -218,7 +218,9 @@ func handleExternalExec(inputTokens []string) {
 
 		cmd.Stdout = &outputBuffer
 
-		_ = cmd.Run()
+		if err := cmd.Run(); err != nil {
+			fmt.Println(err.Error())
+		}
 
 		if outputFile != "" {
 			if err := os.MkdirAll(filepath.Dir(outputFile), 0755); err != nil {
