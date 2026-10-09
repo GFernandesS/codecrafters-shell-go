@@ -81,7 +81,7 @@ func handleEcho(input string, inputTokens []string) bool {
 	if !strings.HasPrefix(input, "echo") {
 		return false
 	}
-
+	//TODO: Usar o input para pegar o conteudo do arquivo ao invés de partir dos tokens (o array de tokens não salva os espacos)
 	if slices.Contains(inputTokens, ">") || slices.Contains(inputTokens, "1>") {
 		directionIndex := slices.Index(inputTokens, ">")
 
@@ -89,7 +89,7 @@ func handleEcho(input string, inputTokens []string) bool {
 			directionIndex = slices.Index(inputTokens, "1>")
 		}
 
-		contentToWrite := strings.Join(inputTokens[1:directionIndex], "")
+		contentToWrite := strings.Join(inputTokens[1:directionIndex], " ")
 
 		fileToWrite := inputTokens[directionIndex+1]
 
