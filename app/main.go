@@ -219,7 +219,7 @@ func handleExternalExec(inputTokens []string) {
 		cmd.Stdout = &outputBuffer
 
 		if err := cmd.Run(); err != nil {
-			fmt.Println(err.Error())
+			fmt.Println(outputBuffer.String())
 		}
 
 		if outputFile != "" {
