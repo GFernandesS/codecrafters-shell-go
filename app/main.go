@@ -18,7 +18,7 @@ import (
 // Ensures gofmt doesn't remove the "fmt" import in stage 1 (feel free to remove this!)
 var _ = fmt.Print
 
-type Handler func(value string, valueTokens []string) bool
+type Handler func(value string, valueTokens []string)
 
 func init() {
 	builtInCommands = map[string]Handler{
@@ -48,19 +48,11 @@ func main() {
 				continue
 			}
 
-			handleExit(input, inputTokens)
+			commandName := inputTokens[0]
 
-			var wasHandle bool
+			if handler, foundCommand := builtInCommands[commandName]; foundCommand {
+				handler(input, inputTokens)
 
-			for _, handler := range builtInCommands {
-				wasHandle = handler(input, inputTokens)
-
-				if wasHandle {
-					break
-				}
-			}
-
-			if wasHandle {
 				fmt.Print("$ ")
 				continue
 			}
@@ -72,20 +64,11 @@ func main() {
 	}
 }
 
-func handleExit(input string, _ []string) bool {
-	if input != "exit" {
-		return false
-	}
-
+func handleExit(_ string, _ []string) {
 	os.Exit(0)
-
-	return true
 }
 
-func handleEcho(input string, inputTokens []string) bool {
-	if !strings.HasPrefix(input, "echo") {
-		return false
-	}
+func handleEcho(input string, inputTokens []string) {
 
 	if slices.Contains(inputTokens, ">") || slices.Contains(inputTokens, "1>") {
 		directionIndex := slices.Index(inputTokens, ">")
@@ -100,43 +83,32 @@ func handleEcho(input string, inputTokens []string) bool {
 
 		if err := os.MkdirAll(filepath.Dir(fileToWrite), 0755); err != nil {
 			fmt.Println(err.Error())
-			return true
+			return
 		}
 
 		if err := os.WriteFile(fileToWrite, []byte(contentToWrite), 0644); err != nil {
 			fmt.Printf(err.Error())
 		}
 
-		return true
+		return
 	}
 
 	fmt.Printf("%s\n", strings.Replace(input, "echo ", "", 1))
-	return true
 }
 
-func handlePwd(input string, _ []string) bool {
-	if !strings.HasPrefix(input, "pwd") {
-		return false
-	}
-
+func handlePwd(_ string, _ []string) {
 	path, _ := os.Getwd()
 
 	fmt.Printf("%s\n", path)
-
-	return true
 }
 
-func handleType(input string, _ []string) bool {
-	if !strings.HasPrefix(input, "type") {
-		return false
-	}
-
+func handleType(input string, _ []string) {
 	command := strings.Replace(input, "type ", "", 1)
 
 	for c := range maps.Keys(builtInCommands) {
 		if c == command {
 			fmt.Printf("%s is a shell builtin\n", command)
-			return true
+			return
 		}
 	}
 
@@ -158,18 +130,13 @@ func handleType(input string, _ []string) bool {
 		}
 
 		fmt.Printf("%s is %s\n", commandInfo.Name(), fullPath)
-		return true
+		return
 	}
 
 	fmt.Printf("%s: not found\n", command)
-	return true
 }
 
-func handleCd(input string, _ []string) bool {
-	if !strings.HasPrefix(input, "cd") {
-		return false
-	}
-
+func handleCd(input string, _ []string) {
 	command := strings.Replace(input, "cd ", "", 1)
 
 	if command == "~" {
@@ -182,7 +149,7 @@ func handleCd(input string, _ []string) bool {
 		fmt.Printf("cd: %s: No such file or directory\n", command)
 	}
 
-	return true
+	return
 }
 
 func handleExternalExec(inputTokens []string) {
